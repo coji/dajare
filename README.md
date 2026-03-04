@@ -30,7 +30,8 @@ npx openskills install coji/dajare-generator
 ### Claude Code プラグイン
 
 ```
-/plugin install coji/dajare-generator
+/plugin marketplace add coji/dajare-generator
+/plugin install dajare-generator@dajare-generator
 ```
 
 ### 手動インストール
