@@ -1,5 +1,5 @@
 {
-  "name": "dajare-generator",
+  "name": "dajare",
   "owner": {
     "name": "coji"
   },
@@ -8,14 +8,14 @@
   },
   "plugins": [
     {
-      "name": "dajare-generator",
+      "name": "dajare",
       "source": ".",
       "description": "日本語のダジャレ（駄洒落）を生成するスキル。単語やお題・状況を入力すると、質の高いダジャレを3〜5個つくって返します。",
       "version": "1.0.0",
       "author": {
         "name": "coji"
       },
-      "homepage": "https://github.com/coji/dajare-generator",
+      "homepage": "https://github.com/coji/dajare",
       "license": "MIT",
       "tags": ["japanese", "dajare", "pun", "wordplay", "language"]
     }

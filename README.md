@@ -1,4 +1,4 @@
-# dajare-generator
+# dajare
 
 日本語のダジャレ（駄洒落）を生成する [Agent Skill](https://agentskills.io)。
 
@@ -12,36 +12,36 @@
 
 ```bash
 # プロジェクトにインストール
-npx skills add coji/dajare-generator
+npx skills add coji/dajare
 
 # グローバルにインストール（全プロジェクトで使用）
-npx skills add coji/dajare-generator -g
+npx skills add coji/dajare -g
 
 # 特定のエージェントを指定
-npx skills add coji/dajare-generator --agent claude-code --agent cursor
+npx skills add coji/dajare --agent claude-code --agent cursor
 ```
 
 ### openskills
 
 ```bash
-npx openskills install coji/dajare-generator
+npx openskills install coji/dajare
 ```
 
 ### Claude Code プラグイン
 
 ```
-/plugin marketplace add coji/dajare-generator
-/plugin install dajare-generator@dajare-generator
+/plugin marketplace add coji/dajare
+/plugin install dajare@dajare
 ```
 
 ### 手動インストール
 
 ```bash
 # Claude Code
-cp -r dajare-generator ~/.claude/skills/
+cp -r dajare ~/.claude/skills/
 
 # Cursor / その他のエージェント
-cp -r dajare-generator .agents/skills/
+cp -r dajare .agents/skills/
 ```
 
 ## 使い方
@@ -53,8 +53,8 @@ cp -r dajare-generator .agents/skills/
 ### スラッシュコマンド
 
 ```
-/dajare-generator コーヒー
-/dajare-generator 会議中の眠気
+/dajare コーヒー
+/dajare 会議中の眠気
 ```
 
 ### 出力例
@@ -83,14 +83,14 @@ cp -r dajare-generator .agents/skills/
 ### セットアップ
 
 ```bash
-git clone https://github.com/coji/dajare-generator.git
-cd dajare-generator
+git clone https://github.com/coji/dajare.git
+cd dajare
 git config core.hooksPath .githooks
 ```
 
 ### SKILL.md の編集
 
-**ルートの `SKILL.md` だけを編集してください。** `skills/dajare-generator/SKILL.md` は pre-commit hook で自動的に同期されます。
+**ルートの `SKILL.md` だけを編集してください。** `skills/dajare/SKILL.md` は pre-commit hook で自動的に同期されます。
 
 description を変更した場合は `AGENTS.md` と `.claude-plugin/plugin.json` も揃えてください。
 
