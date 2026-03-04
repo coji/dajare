@@ -1,0 +1,10 @@
+{
+  "name": "dajare-generator",
+  "description": "日本語のダジャレ（駄洒落）を生成するスキル。単語やお題・状況を入力すると、質の高いダジャレを3〜5個つくって返します。",
+  "version": "1.0.0",
+  "author": {
+    "name": "coji"
+  },
+  "repository": "https://github.com/coji/dajare-generator",
+  "license": "MIT"
+}

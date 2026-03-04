@@ -1,0 +1,6 @@
+#!/bin/sh
+# Sync root SKILL.md to skills/dajare-generator/SKILL.md
+# Root SKILL.md is the single source of truth.
+
+cp SKILL.md skills/dajare-generator/SKILL.md
+git add skills/dajare-generator/SKILL.md
