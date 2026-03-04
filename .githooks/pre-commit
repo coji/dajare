@@ -1,6 +1,10 @@
 #!/bin/sh
-# Sync root SKILL.md to skills/dajare/SKILL.md
-# Root SKILL.md is the single source of truth.
+# Sync root files to skills/dajare/
+# Root SKILL.md and scripts/rhyme.py are the single source of truth.
 
 cp SKILL.md skills/dajare/SKILL.md
 git add skills/dajare/SKILL.md
+
+mkdir -p skills/dajare/scripts
+cp scripts/rhyme.py skills/dajare/scripts/rhyme.py
+git add skills/dajare/scripts/rhyme.py
