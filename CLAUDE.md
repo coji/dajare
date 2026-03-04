@@ -26,6 +26,7 @@
 | `.claude-plugin/plugin.json` | Claude Code プラグインマニフェスト | バージョン更新時に編集 |
 | `.claude-plugin/marketplace.json` | Claude Code マーケットプレイスカタログ | バージョン更新時に plugin.json と揃える |
 | `README.md` | インストール手順・使い方 | 機能追加時に更新 |
+| `scripts/rhyme.py` | 読み変換・母音列抽出スクリプト | PEP 723 依存、`uv run` で実行 |
 
 ### description の同期
 
