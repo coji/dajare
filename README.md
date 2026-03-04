@@ -50,11 +50,20 @@ cp -r dajare .agents/skills/
 
 「ダジャレ」「駄洒落」「おやじギャグ」「pun」などのキーワードや、「〇〇で何か面白いこと言って」のような言い回しで自動的にスキルが発動します。
 
+### スタイル指定
+
+`--style` オプションで語り口を切り替えられます。
+
+```
+/dajare コーヒー --style 関西弁
+```
+
 ### スラッシュコマンド
 
 ```
 /dajare コーヒー
 /dajare 会議中の眠気
+/dajare コーヒー --style 関西弁
 ```
 
 ### 出力例
@@ -77,6 +86,30 @@ cp -r dajare .agents/skills/
 - Windsurf
 - Roo Code
 - その他 30 以上
+
+## アップデート
+
+### npx skills
+
+```bash
+npx skills add coji/dajare
+```
+
+再度 `add` を実行すると最新版に更新されます。
+
+### openskills
+
+```bash
+npx openskills install coji/dajare
+```
+
+### Claude Code プラグイン
+
+```
+/plugin marketplace update coji/dajare
+```
+
+自動アップデートを有効にする場合は `/plugin` → Marketplaces タブ → `coji/dajare` を選択 → auto-update を有効にしてください。
 
 ## 開発
 
