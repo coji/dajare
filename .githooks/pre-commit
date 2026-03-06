@@ -9,6 +9,11 @@ mkdir -p skills/dajare/scripts
 cp scripts/rhyme.py skills/dajare/scripts/rhyme.py
 git add skills/dajare/scripts/rhyme.py
 
+if [ -f scripts/rhyme-dict.json.gz ]; then
+  cp scripts/rhyme-dict.json.gz skills/dajare/scripts/rhyme-dict.json.gz
+  git add skills/dajare/scripts/rhyme-dict.json.gz
+fi
+
 mkdir -p skills/dajare/references
 rm -f skills/dajare/references/*.md
 for f in references/*.md; do
