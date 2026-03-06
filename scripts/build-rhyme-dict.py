@@ -56,9 +56,9 @@ def main() -> None:
             morphs = tokenizer.tokenize(word)
             reading = "".join(kata_to_hira(m.reading_form()) for m in morphs)
 
-            if not reading or reading == word and any(
+            if not reading or (reading == word and any(
                 "\u4e00" <= c <= "\u9fff" for c in word
-            ):
+            )):
                 skipped += 1
                 continue
 

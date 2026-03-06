@@ -95,10 +95,19 @@ def kata_to_hira(text: str) -> str:
     return "".join(result)
 
 
+_tokenizer = None
+
+
+def _get_tokenizer():
+    global _tokenizer
+    if _tokenizer is None:
+        _tokenizer = Dictionary().create()
+    return _tokenizer
+
+
 def to_reading(text: str) -> str:
     """sudachipy を使って漢字混じりテキストをひらがなに変換"""
-    tokenizer = Dictionary().create()
-    morphs = tokenizer.tokenize(text)
+    morphs = _get_tokenizer().tokenize(text)
     return "".join(kata_to_hira(m.reading_form()) for m in morphs)
 
 
