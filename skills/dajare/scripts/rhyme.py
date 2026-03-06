@@ -7,19 +7,23 @@
 # ]
 # ///
 """
-ダジャレ生成補助スクリプト: 読み変換・母音列・子音列抽出・類似度比較
+ダジャレ生成補助スクリプト: 読み変換・母音列・子音列抽出・類似度比較・逆引き韻辞書
 
 Usage:
     uv run scripts/rhyme.py <単語> [<単語> ...]
+    uv run scripts/rhyme.py --search <単語>
     uv run scripts/rhyme.py --json <単語> [<単語> ...]
 
 Examples:
     uv run scripts/rhyme.py コーヒー
     uv run scripts/rhyme.py コーヒー 公費 高飛車
+    uv run scripts/rhyme.py --search コーヒー
     uv run scripts/rhyme.py --json コーヒー
 """
 
+import gzip
 import json
+import os
 import sys
 import unicodedata
 
@@ -314,15 +318,102 @@ def format_text(results: list[dict], similarities: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def load_rhyme_dict() -> dict[str, list[list[str]]]:
+    """韻辞書を読み込む"""
+    dict_path = os.path.join(os.path.dirname(__file__), "rhyme-dict.json.gz")
+    if not os.path.exists(dict_path):
+        print(
+            f"韻辞書が見つかりません: {dict_path}\n"
+            "  uv run scripts/build-rhyme-dict.py で生成してください",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    with gzip.open(dict_path, "rt", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def search_rhymes(word: str) -> None:
+    """単語の母音列で韻辞書を検索し、完全一致・部分一致の候補を表示する"""
+    info = analyze_word(word)
+    vowels = [v for v in info["vowels"] if v]  # 促音を除外
+    vowel_str = "-".join(vowels)
+
+    print(f"{info['input']} → {info['reading']} ({info['morae']}拍)")
+    print(f"  母音: {info['vowel_str']}  子音: {info['consonant_str']}")
+    print()
+
+    rhyme_dict = load_rhyme_dict()
+
+    # 完全一致
+    exact = rhyme_dict.get(vowel_str, [])
+    # 自分自身を除外
+    exact = [[w, r] for w, r in exact if w != word]
+
+    if exact:
+        print(f"完全一致 ({vowel_str}): {len(exact)}件")
+        for w, r in exact[:20]:
+            print(f"  {w} ({r})")
+        if len(exact) > 20:
+            print(f"  ... 他 {len(exact) - 20}件")
+    else:
+        print(f"完全一致 ({vowel_str}): なし")
+
+    # 部分一致: 辞書内の各パターンとLCSで類似度を計算し、50%以上のものを抽出
+    print()
+    print("類似パターン (類似度50%以上):")
+
+    similar: list[tuple[int, str, list[list[str]]]] = []
+    for pattern, entries in rhyme_dict.items():
+        if pattern == vowel_str:
+            continue
+        pattern_vowels = [v for v in pattern.split("-") if v != "·"]
+        lcs_len, _ = lcs_length(vowels, pattern_vowels)
+        max_len = max(len(vowels), len(pattern_vowels))
+        if max_len > 0:
+            ratio = lcs_len / max_len
+            if ratio >= 0.5:
+                percent = round(ratio * 100)
+                similar.append((percent, pattern, entries))
+
+    similar.sort(key=lambda x: -x[0])
+
+    if similar:
+        for percent, pattern, entries in similar[:10]:
+            sample = entries[:5]
+            words_str = ", ".join(f"{w}({r})" for w, r in sample)
+            more = f" 他{len(entries) - 5}件" if len(entries) > 5 else ""
+            print(f"  {percent}% {pattern}: {words_str}{more}")
+    else:
+        print("  なし")
+
+
 def main() -> None:
     args = sys.argv[1:]
 
     if not args:
-        print("Usage: uv run scripts/rhyme.py <単語> [<単語> ...] [--json]", file=sys.stderr)
+        print(
+            "Usage:\n"
+            "  uv run scripts/rhyme.py <単語> [<単語> ...]   分析・比較\n"
+            "  uv run scripts/rhyme.py --search <単語>       逆引き韻辞書検索\n"
+            "  uv run scripts/rhyme.py --json <単語>         JSON出力",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
+    # --search モード
+    if "--search" in args:
+        search_words = [a for a in args if a not in ("--search", "--json")]
+        if not search_words:
+            print("Usage: uv run scripts/rhyme.py --search <単語>", file=sys.stderr)
+            sys.exit(1)
+        for word in search_words:
+            search_rhymes(word)
+            if word != search_words[-1]:
+                print()
+        return
+
     use_json = "--json" in args
-    words = [a for a in args if a != "--json"]
+    words = [a for a in args if a not in ("--json",)]
 
     if not words:
         print("Usage: uv run scripts/rhyme.py <単語> [<単語> ...] [--json]", file=sys.stderr)
