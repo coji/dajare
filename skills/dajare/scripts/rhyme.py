@@ -2,24 +2,28 @@
 # /// script
 # requires-python = ">=3.9"
 # dependencies = [
-#     "pykakasi>=2.3.0",
+#     "sudachipy>=0.6.8",
+#     "sudachidict-core>=20230927",
 # ]
 # ///
 """
-ダジャレ生成補助スクリプト: 読み変換・母音列・子音列抽出
+ダジャレ生成補助スクリプト: 読み変換・母音列・子音列抽出・類似度比較
 
 Usage:
     uv run scripts/rhyme.py <単語> [<単語> ...]
+    uv run scripts/rhyme.py --json <単語> [<単語> ...]
 
 Examples:
     uv run scripts/rhyme.py コーヒー
-    uv run scripts/rhyme.py 猫 布団 会議
+    uv run scripts/rhyme.py コーヒー 公費 高飛車
+    uv run scripts/rhyme.py --json コーヒー
 """
 
 import json
 import sys
+import unicodedata
 
-import pykakasi
+from sudachipy import Dictionary
 
 # ひらがな → (子音, 母音) マッピング
 # 拗音は前の文字と合わせて処理するため、小書きゃゅょは別扱い
@@ -88,10 +92,10 @@ def kata_to_hira(text: str) -> str:
 
 
 def to_reading(text: str) -> str:
-    """pykakasi を使って漢字混じりテキストをひらがなに変換"""
-    kakasi = pykakasi.kakasi()
-    result = kakasi.convert(text)
-    return "".join(kata_to_hira(item["kana"]) for item in result)
+    """sudachipy を使って漢字混じりテキストをひらがなに変換"""
+    tokenizer = Dictionary().create()
+    morphs = tokenizer.tokenize(text)
+    return "".join(kata_to_hira(m.reading_form()) for m in morphs)
 
 
 def analyze_morae(reading: str) -> list[tuple[str, str]]:
@@ -185,11 +189,8 @@ def analyze_word(word: str) -> dict:
     reading = to_reading(word)
     morae = analyze_morae(reading)
 
-    vowels = []
-    consonants = []
-    for c, v in morae:
-        consonants.append(c)
-        vowels.append(v)
+    vowels = [v for _, v in morae]
+    consonants = [c for c, _ in morae]
 
     return {
         "input": word,
@@ -197,24 +198,152 @@ def analyze_word(word: str) -> dict:
         "morae": len(morae),
         "vowels": vowels,
         "consonants": consonants,
-        "vowel_str": "-".join(vowels),
-        "consonant_str": "-".join(consonants),
+        "vowel_str": "-".join(v if v else "·" for v in vowels),
+        "consonant_str": "-".join(c if c else "·" for c in consonants),
     }
 
 
+def lcs_length(a: list, b: list) -> tuple[int, list]:
+    """最長共通部分列(LCS)の長さと部分列を返す"""
+    m, n = len(a), len(b)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if a[i - 1] == b[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+    # 部分列を復元
+    seq: list = []
+    i, j = m, n
+    while i > 0 and j > 0:
+        if a[i - 1] == b[j - 1]:
+            seq.append(a[i - 1])
+            i -= 1
+            j -= 1
+        elif dp[i - 1][j] > dp[i][j - 1]:
+            i -= 1
+        else:
+            j -= 1
+    seq.reverse()
+    return dp[m][n], seq
+
+
+def vowel_similarity(a: dict, b: dict) -> dict:
+    """2つの単語の母音列の類似度を計算する"""
+    va = [v for v in a["vowels"] if v]  # 空文字(促音)を除外
+    vb = [v for v in b["vowels"] if v]
+    length, seq = lcs_length(va, vb)
+    max_len = max(len(va), len(vb))
+    ratio = length / max_len if max_len > 0 else 0.0
+    return {
+        "pair": f"{a['input']} × {b['input']}",
+        "ratio": ratio,
+        "percent": round(ratio * 100),
+        "lcs": seq,
+        "lcs_str": "-".join(seq),
+        "lcs_length": length,
+        "max_length": max_len,
+    }
+
+
+def display_width(s: str) -> int:
+    """文字列の表示幅を計算する（全角=2, 半角=1）"""
+    width = 0
+    for ch in s:
+        cat = unicodedata.east_asian_width(ch)
+        width += 2 if cat in ("F", "W") else 1
+    return width
+
+
+def pad(s: str, width: int) -> str:
+    """全角文字を考慮してパディングする"""
+    return s + " " * (width - display_width(s))
+
+
+def format_text(results: list[dict], similarities: list[dict]) -> str:
+    """LLM 向けのコンパクトなテキスト出力を生成する"""
+    lines = []
+
+    if len(results) == 1:
+        r = results[0]
+        lines.append(f"{r['input']} → {r['reading']} ({r['morae']}拍)")
+        lines.append(f"  母音: {r['vowel_str']}  子音: {r['consonant_str']}")
+    else:
+        # カラム幅を計算（表示幅ベース）
+        col_input = max(display_width(r["input"]) for r in results)
+        col_reading = max(display_width(r["reading"]) for r in results)
+        col_vowel = max(len(r["vowel_str"]) for r in results)
+
+        col_input = max(col_input, 4)
+        col_reading = max(col_reading, 4)
+
+        header = (
+            f"{pad('単語', col_input)}  "
+            f"{pad('読み', col_reading)}  "
+            f"拍  "
+            f"{pad('母音', col_vowel)}  "
+            f"子音"
+        )
+        lines.append(header)
+
+        for r in results:
+            line = (
+                f"{pad(r['input'], col_input)}  "
+                f"{pad(r['reading'], col_reading)}  "
+                f"{r['morae']:>2}  "
+                f"{r['vowel_str']:<{col_vowel}}  "
+                f"{r['consonant_str']}"
+            )
+            lines.append(line)
+
+        if similarities:
+            lines.append("")
+            lines.append("類似度 (母音LCS):")
+            for s in similarities:
+                verdict = "⚠ 低い" if s["percent"] < 50 else "✓"
+                lines.append(
+                    f"  {s['pair']}: "
+                    f"{s['percent']}% "
+                    f"(共通: {s['lcs_str'] or 'なし'}, "
+                    f"{s['lcs_length']}/{s['max_length']}拍) "
+                    f"{verdict}"
+                )
+
+    return "\n".join(lines)
+
+
 def main() -> None:
-    if len(sys.argv) < 2:
-        print("Usage: uv run scripts/rhyme.py <単語> [<単語> ...]", file=sys.stderr)
+    args = sys.argv[1:]
+
+    if not args:
+        print("Usage: uv run scripts/rhyme.py <単語> [<単語> ...] [--json]", file=sys.stderr)
         sys.exit(1)
 
-    words = sys.argv[1:]
+    use_json = "--json" in args
+    words = [a for a in args if a != "--json"]
 
-    if len(words) == 1:
-        result = analyze_word(words[0])
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+    if not words:
+        print("Usage: uv run scripts/rhyme.py <単語> [<単語> ...] [--json]", file=sys.stderr)
+        sys.exit(1)
+
+    results = [analyze_word(w) for w in words]
+
+    # 2語以上なら全ペアの類似度を計算
+    similarities = []
+    if len(results) >= 2:
+        for i in range(len(results)):
+            for j in range(i + 1, len(results)):
+                similarities.append(vowel_similarity(results[i], results[j]))
+
+    if use_json:
+        output = {"words": results}
+        if similarities:
+            output["similarities"] = similarities
+        print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
-        results = [analyze_word(w) for w in words]
-        print(json.dumps(results, ensure_ascii=False, indent=2))
+        print(format_text(results, similarities))
 
 
 if __name__ == "__main__":
