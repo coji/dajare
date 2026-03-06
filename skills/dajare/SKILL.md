@@ -66,7 +66,7 @@ argument-hint: "[単語やお題] [--style 関西弁]"
 | `references/humor-theory.md` | 面白さの3層構造（音・意味・文脈）の理論 | 生成方針に迷ったとき |
 | `references/generation-guide.md` | 各ステップの詳細手法・長い単語への対応・検証手順・バリエーション定義 | 生成プロセスの各ステップで |
 | `references/examples.md` | 思考プロセス付きの生成例（猫・コーヒー・会議・関西弁） | 初回生成時や品質のベンチマークとして |
-| `references/bad-examples.md` | LLMが陥りやすい4つの失敗パターン | ステップ4の自己チェック時 |
+| `references/bad-examples.md` | LLMが陥りやすい5つの失敗パターン | ステップ4の自己チェック時 |
 | `scripts/rhyme.py` | 読み変換・母音列・子音列抽出・類似度比較 | ステップ1とステップ4で |
 | `scripts/rhyme.py --search` | 逆引き韻辞書検索（約4万語） | ステップ2で候補を網羅的に探すとき |
 
