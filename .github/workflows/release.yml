@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Package .skill file
+      - name: Package .skill files
         run: scripts/package-skill.sh dist
 
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" dist/dajare.skill --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.skill --clobber

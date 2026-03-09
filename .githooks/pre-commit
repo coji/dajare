@@ -1,7 +1,9 @@
 #!/bin/sh
-# Sync root files to skills/dajare/
-# Root SKILL.md, scripts/rhyme.py, and references/ are the single source of truth.
+# Sync root files to skills/dajare/ and skills/japanese-rap/
+# Root SKILL.md, scripts/rhyme.py, and references/ are the single source of truth for dajare.
+# japanese-rap/ is the single source of truth for the japanese-rap skill.
 
+# --- dajare ---
 cp SKILL.md skills/dajare/SKILL.md
 git add skills/dajare/SKILL.md
 
@@ -22,3 +24,10 @@ for f in references/*.md; do
     git add "skills/dajare/$f"
   fi
 done
+
+# --- japanese-rap ---
+if [ -d japanese-rap ]; then
+  mkdir -p skills/japanese-rap
+  cp -r japanese-rap/* skills/japanese-rap/
+  git add skills/japanese-rap/
+fi
