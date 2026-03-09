@@ -4,20 +4,23 @@
 # dependencies = [
 #     "sudachipy>=0.6.8",
 #     "sudachidict-core>=20230927",
+#     "numpy>=1.24",
 # ]
 # ///
 """
-ダジャレ生成補助スクリプト: 読み変換・母音列・子音列抽出・類似度比較・逆引き韻辞書
+韻検索・分析スクリプト: 読み変換・母音列・子音列抽出・類似度比較・逆引き韻辞書・韻bedding検索
 
 Usage:
     uv run scripts/rhyme.py <単語> [<単語> ...]
     uv run scripts/rhyme.py --search <単語>
+    uv run scripts/rhyme.py --search-embed <単語>
     uv run scripts/rhyme.py --json <単語> [<単語> ...]
 
 Examples:
     uv run scripts/rhyme.py コーヒー
     uv run scripts/rhyme.py コーヒー 公費 高飛車
     uv run scripts/rhyme.py --search コーヒー
+    uv run scripts/rhyme.py --search-embed コーヒー
     uv run scripts/rhyme.py --json コーヒー
 """
 
@@ -396,6 +399,143 @@ def search_rhymes(word: str) -> None:
         print("  なし")
 
 
+# ---------------------------------------------------------------------------
+# 韻bedding: 母音列の n-gram ベクトル化によるファジー韻検索
+# ---------------------------------------------------------------------------
+
+# 母音アルファベット (a,i,u,e,o + X=特殊拍:撥音・促音)
+_EMBED_ALPHA = ["a", "i", "u", "e", "o", "X"]
+
+
+def _build_ngram_vocab() -> dict[str, int]:
+    """1-gram, 2-gram, 3-gram の全組み合わせ → ベクトルインデックスのマッピングを構築"""
+    vocab: dict[str, int] = {}
+    idx = 0
+    for n in (1, 2, 3):
+        for combo in _ngram_combos(_EMBED_ALPHA, n):
+            vocab[combo] = idx
+            idx += 1
+    return vocab
+
+
+def _ngram_combos(alpha: list[str], n: int) -> list[str]:
+    """alpha の n-gram の全組み合わせを生成"""
+    if n == 1:
+        return list(alpha)
+    result = []
+    for prefix in _ngram_combos(alpha, n - 1):
+        for ch in alpha:
+            result.append(prefix + ch)
+    return result
+
+
+_NGRAM_VOCAB = _build_ngram_vocab()
+_NGRAM_DIM = len(_NGRAM_VOCAB)  # 6 + 36 + 216 = 258
+
+
+def _vowels_to_symbols(vowels: list[str]) -> list[str]:
+    """母音リストを embedding 用のシンボル列に変換"""
+    symbols = []
+    for v in vowels:
+        if v in ("a", "i", "u", "e", "o"):
+            symbols.append(v)
+        else:
+            symbols.append("X")  # 撥音・促音・空文字
+    return symbols
+
+
+def _symbols_to_vector(symbols: list[str]) -> "numpy.ndarray":
+    """シンボル列を n-gram 頻度ベクトルに変換（L2 正規化済み）"""
+    import numpy as np
+
+    vec = np.zeros(_NGRAM_DIM, dtype=np.float32)
+    n = len(symbols)
+
+    for ch in symbols:
+        if ch in _NGRAM_VOCAB:
+            vec[_NGRAM_VOCAB[ch]] += 1
+    for i in range(n - 1):
+        bg = symbols[i] + symbols[i + 1]
+        if bg in _NGRAM_VOCAB:
+            vec[_NGRAM_VOCAB[bg]] += 1
+    for i in range(n - 2):
+        tg = symbols[i] + symbols[i + 1] + symbols[i + 2]
+        if tg in _NGRAM_VOCAB:
+            vec[_NGRAM_VOCAB[tg]] += 1
+
+    norm = np.linalg.norm(vec)
+    if norm > 0:
+        vec /= norm
+    return vec
+
+
+def vowels_to_vector(vowels: list[str]) -> "numpy.ndarray":
+    """母音リストを n-gram ベクトルに変換（公開API）"""
+    return _symbols_to_vector(_vowels_to_symbols(vowels))
+
+
+def _pattern_to_symbols(pattern: str) -> list[str]:
+    """韻辞書のパターン文字列 (e.g. "o-o-i-i") をシンボル列に変換"""
+    symbols = []
+    for v in pattern.split("-"):
+        if v in ("a", "i", "u", "e", "o"):
+            symbols.append(v)
+        else:
+            symbols.append("X")
+    return symbols
+
+
+def search_rhymes_embed(word: str, top_k: int = 30) -> None:
+    """韻bedding によるファジー韻検索。語感踏み・長さ違いにも対応。"""
+    import numpy as np
+
+    info = analyze_word(word)
+    query_symbols = _vowels_to_symbols(info["vowels"])
+    query_vec = _symbols_to_vector(query_symbols)
+
+    print(f"{info['input']} → {info['reading']} ({info['morae']}拍)")
+    print(f"  母音: {info['vowel_str']}  子音: {info['consonant_str']}")
+    print()
+
+    rhyme_dict = load_rhyme_dict()
+    patterns = list(rhyme_dict.keys())
+
+    # 全パターンのベクトルを一括計算
+    matrix = np.array(
+        [_symbols_to_vector(_pattern_to_symbols(p)) for p in patterns],
+        dtype=np.float32,
+    )
+
+    # コサイン類似度（ベクトルは正規化済みなのでドット積 = コサイン類似度）
+    sims = matrix @ query_vec
+
+    # 自分自身のパターンを特定
+    own_pattern = "-".join(v if v else "·" for v in info["vowels"])
+
+    # 上位を抽出
+    top_indices = np.argsort(sims)[::-1]
+    shown = 0
+    print(f"韻bedding検索 (上位{top_k}件):")
+    for idx in top_indices:
+        if shown >= top_k:
+            break
+        pattern = patterns[idx]
+        if pattern == own_pattern:
+            continue
+        sim_pct = round(float(sims[idx]) * 100)
+        if sim_pct < 30:
+            break
+        entries = rhyme_dict[pattern]
+        sample = entries[:5]
+        words_str = ", ".join(f"{w}({r})" for w, r in sample)
+        more = f" 他{len(entries) - 5}件" if len(entries) > 5 else ""
+        print(f"  {sim_pct}% {pattern}: {words_str}{more}")
+        shown += 1
+
+    if shown == 0:
+        print("  該当なし")
+
+
 def main() -> None:
     args = sys.argv[1:]
 
@@ -404,10 +544,23 @@ def main() -> None:
             "Usage:\n"
             "  uv run scripts/rhyme.py <単語> [<単語> ...]   分析・比較\n"
             "  uv run scripts/rhyme.py --search <単語>       逆引き韻辞書検索\n"
+            "  uv run scripts/rhyme.py --search-embed <単語>  韻bedding検索（語感踏み対応）\n"
             "  uv run scripts/rhyme.py --json <単語>         JSON出力",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    # --search-embed モード
+    if "--search-embed" in args:
+        search_words = [a for a in args if not a.startswith("--")]
+        if not search_words:
+            print("Usage: uv run scripts/rhyme.py --search-embed <単語>", file=sys.stderr)
+            sys.exit(1)
+        for word in search_words:
+            search_rhymes_embed(word)
+            if word != search_words[-1]:
+                print()
+        return
 
     # --search モード
     if "--search" in args:
