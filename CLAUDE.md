@@ -30,6 +30,8 @@
 | `.claude-plugin/plugin.json` | Claude Code プラグインマニフェスト | バージョン更新時に編集 |
 | `.claude-plugin/marketplace.json` | Claude Code マーケットプレイスカタログ | バージョン更新時に plugin.json と揃える |
 | `README.md` | インストール手順・使い方 | 機能追加時に更新 |
+| `scripts/package-skill.sh` | .skill パッケージング | `skills/dajare/` を zip して配布用 `.skill` を生成 |
+| `.github/workflows/release.yml` | GitHub Release 時の自動ビルド | Release publish で `dajare.skill` を asset に添付 |
 
 ### description の同期
 
@@ -58,11 +60,12 @@ references/ のファイル：
 
 ## 配布チャネル
 
-3つのインストール方法に対応している：
+4つのインストール方法に対応している：
 
 - `npx skills add coji/dajare` — ルートの SKILL.md を使用
 - `npx openskills install coji/dajare` — AGENTS.md を使用
 - `/plugin marketplace add coji/dajare` → `/plugin install dajare@dajare` — .claude-plugin/ + skills/ を使用
+- GitHub Releases の `dajare.skill` — Cowork で「Copy to your skills」からインストール
 
 ### バージョン管理
 
@@ -79,3 +82,4 @@ references/ のファイル：
 3. `plugin.json` と `marketplace.json` の `version` をバンプ（両方揃える）
 4. commit（pre-commit hook が `SKILL.md`、`references/*.md`、`scripts/rhyme.py` を skills/ に自動同期）
 5. push
+6. GitHub で Release を作成（タグ例: `v1.3.0`）→ Actions が `dajare.skill` を自動ビルドして release asset に添付

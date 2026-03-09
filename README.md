@@ -44,6 +44,10 @@ cp -r dajare ~/.claude/skills/
 cp -r dajare .agents/skills/
 ```
 
+### .skill ファイル（Cowork）
+
+[Releases ページ](https://github.com/coji/dajare/releases) から `dajare.skill` をダウンロードし、Cowork の「Copy to your skills」でインストールできます。
+
 ## 処理の流れ
 
 ```
