@@ -56,7 +56,7 @@ cp -r dajare .agents/skills/
 
 ## dajare-spinner
 
-Claude Code の処理中スピナーにランダムなダジャレを表示するスキル。[ダジャレ API](https://dajare-api.compile-error.net/api) から取得したダジャレが作業中にくるくる流れてきます。
+Claude Code の処理中スピナーにランダムなダジャレを表示するスキル。[@mattn](https://github.com/mattn) さん提供の[ダジャレ API](https://dajare-api.compile-error.net/api) から取得したダジャレが作業中にくるくる流れてきます。
 
 ### セットアップ
 

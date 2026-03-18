@@ -10,7 +10,7 @@ triggers:
 
 # dajare-spinner
 
-Claude Code の処理中スピナーにダジャレを表示するスキル。
+Claude Code の処理中スピナーにダジャレを表示するスキル。ダジャレデータは [@mattn](https://github.com/mattn) さん提供の [ダジャレ API](https://dajare-api.compile-error.net/api) を利用しています。
 
 - 初回: このスキルをトリガーしてダジャレを設定（opt-in）
 - 以降: セッション開始時に自動で6時間ごとにリフレッシュ（plugin hook）
