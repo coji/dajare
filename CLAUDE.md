@@ -4,9 +4,10 @@
 
 日本語のダジャレ・日本語ラップを生成する Agent Skill 群。Agent Skills オープン標準 (https://agentskills.io) に準拠。
 
-現在2つのスキルを収録：
+現在3つのスキルを収録：
 - **dajare** — 日本語のダジャレ（駄洒落）を生成
 - **japanese-rap** — 日本語ラップの歌詞を生成
+- **dajare-spinner** — Claude Code のスピナーにランダムなダジャレを表示
 
 ## ファイル構成と整合性ルール
 
@@ -16,6 +17,7 @@
 
 - **dajare**: ルートの `SKILL.md`、`references/*.md`、`scripts/rhyme.py` が正。`skills/dajare/` はコピー。
 - **japanese-rap**: `japanese-rap/` ディレクトリが正。`skills/japanese-rap/` はコピー。
+- **dajare-spinner**: `dajare-spinner/` ディレクトリが正。`skills/dajare-spinner/` はコピー。
 
 共通ルール：
 - `skills/` 配下は直接編集しない
@@ -36,6 +38,9 @@
 | `.claude-plugin/plugin.json` | Claude Code プラグインマニフェスト | バージョン更新時に編集 |
 | `.claude-plugin/marketplace.json` | Claude Code マーケットプレイスカタログ | バージョン更新時に plugin.json と揃える |
 | `README.md` | インストール手順・使い方 | 機能追加時に更新 |
+| `dajare-spinner/SKILL.md` | ダジャレスピナースキル本体（正） | **ここだけ編集する** |
+| `dajare-spinner/scripts/` | スピナー用スクリプト（正） | **ここだけ編集する** |
+| `skills/dajare-spinner/` | プラグイン用コピー | **編集禁止**（hook が自動同期） |
 | `japanese-rap/SKILL.md` | 日本語ラップスキル本体（正） | **ここだけ編集する** |
 | `japanese-rap/references/*.md` | ラップスキルの詳細ドキュメント（正） | **ここだけ編集する** |
 | `japanese-rap/scripts/rhyme.py` | ラップスキル用 rhyme.py コピー | rhyme.py 更新時に再コピー |

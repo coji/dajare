@@ -18,6 +18,11 @@ npx openskills read <skill-name>
   <description>日本語のダジャレ（駄洒落）を生成するスキル。ユーザーが単語やお題・状況を入力すると、それをもとに面白いダジャレを3〜5個つくって返す。「ダジャレ」「駄洒落」「だじゃれ」「おやじギャグ」「シャレ」「洒落」「しゃれ」「語呂合わせ」「pun」といった言葉が出てきたら必ずこのスキルを使う。また、「〇〇で何か面白いこと言って」「〇〇でひとボケして」のように、言葉遊びやボケを求められた場合もこのスキルをトリガーする。</description>
   <location>project</location>
 </skill>
+<skill>
+  <name>dajare-spinner</name>
+  <description>Claude Codeのスピナー（処理中表示）にランダムなダジャレを設定するスキル。作業中にダジャレが流れてきて楽しくなる。「スピナー」「spinner」「ダジャレスピナー」といった言葉が出てきたらこのスキルを使う。</description>
+  <location>project</location>
+</skill>
 </available_skills>
 
 </skills_system>

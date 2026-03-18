@@ -1,10 +1,16 @@
 # dajare
 
-日本語のダジャレ（駄洒落）を生成する [Agent Skill](https://agentskills.io)。
-
-単語やお題・状況を入力すると、音の類似度・意味の距離・文脈の自然さを考慮した質の高いダジャレを 3〜5 個生成します。
+日本語のダジャレ・ラップ・スピナーを生成する [Agent Skill](https://agentskills.io) 群。
 
 [Agent Skills](https://agentskills.io) オープン標準に準拠しており、Claude Code / Cursor / Codex / Gemini CLI など 40 以上のエージェントで利用できます。
+
+## 収録スキル
+
+| スキル | 説明 |
+|---|---|
+| **dajare** | 単語やお題から質の高いダジャレを 3〜5 個生成 |
+| **japanese-rap** | テーマから固い韻・切れ味のあるパンチラインを備えた日本語ラップを生成 |
+| **dajare-spinner** | Claude Code のスピナー（処理中表示）にランダムなダジャレを表示 |
 
 ## インストール
 
@@ -48,7 +54,35 @@ cp -r dajare .agents/skills/
 
 [Releases ページ](https://github.com/coji/dajare/releases) から `dajare.skill` をダウンロードし、Cowork の「Copy to your skills」でインストールできます。
 
-## 処理の流れ
+## dajare-spinner
+
+Claude Code の処理中スピナーにランダムなダジャレを表示するスキル。[@mattn](https://github.com/mattn) さん提供の[ダジャレ API](https://dajare-api.compile-error.net/api) から取得したダジャレが作業中にくるくる流れてきます。
+
+### セットアップ
+
+スキルトリガーで初回セットアップ（opt-in）：
+
+```
+/dajare-spinner
+```
+
+API からダジャレを 30 件取得して `~/.claude/settings.json` の `spinnerVerbs` に設定します。
+
+### 自動更新
+
+初回セットアップ後は、セッション開始時に自動で鮮度チェックし、6 時間経過していればバックグラウンドで差し替えます（plugin の `SessionStart` hook）。
+
+無効にするには `~/.claude/settings.json` から `spinnerVerbs` を削除してください。
+
+### 更新間隔の変更
+
+環境変数 `DAJARE_SPINNER_INTERVAL` で更新間隔（秒）を変更できます（デフォルト: 21600 = 6 時間）。
+
+---
+
+## dajare スキル詳細
+
+### 処理の流れ
 
 ```
 ┌─────────────────────────────────────────────────┐
