@@ -31,3 +31,10 @@ if [ -d japanese-rap ]; then
   cp -r japanese-rap/* skills/japanese-rap/
   git add skills/japanese-rap/
 fi
+
+# --- dajare-spinner ---
+if [ -d dajare-spinner ]; then
+  mkdir -p skills/dajare-spinner
+  cp -r dajare-spinner/* skills/dajare-spinner/
+  git add skills/dajare-spinner/
+fi
