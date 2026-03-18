@@ -58,10 +58,23 @@ cp -r dajare .agents/skills/
 
 Claude Code の処理中スピナーにランダムなダジャレを表示するスキル。[@mattn](https://github.com/mattn) さん提供の[ダジャレ API](https://dajare-api.compile-error.net/api) から取得したダジャレが作業中にくるくる流れてきます。
 
+### インストール（Claude Code）
+
+以下のいずれかでインストールしてください：
+
+```bash
+# npx skills（推奨）
+npx skills add coji/dajare -g
+
+# Claude Code プラグイン
+/plugin marketplace add coji/dajare
+/plugin install dajare@dajare-spinner
+```
+
 ### セットアップ
 
-1. スキルをインストール後、**Claude Code を再起動**してスキルを認識させる
-2. スキルトリガーで初回セットアップ（opt-in）：
+1. インストール後、**Claude Code を再起動**してスキルを認識させる
+2. 再起動したら、スキルトリガーで初回セットアップ（opt-in）：
 
 ```
 /dajare-spinner
