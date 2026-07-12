@@ -68,7 +68,7 @@ npx skills add coji/dajare -g
 
 # Claude Code プラグイン
 /plugin marketplace add coji/dajare
-/plugin install dajare@dajare-spinner
+/plugin install dajare@dajare
 ```
 
 ### セットアップ

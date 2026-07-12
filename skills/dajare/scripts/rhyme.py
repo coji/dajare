@@ -1,9 +1,9 @@
 #!/usr/bin/env -S uv run
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.10"
 # dependencies = [
 #     "sudachipy>=0.6.8",
-#     "sudachidict-core>=20230927",
+#     "sudachidict-core>=20240409",
 #     "numpy>=1.24",
 # ]
 # ///
