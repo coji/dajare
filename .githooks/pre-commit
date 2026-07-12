@@ -26,18 +26,24 @@ for f in references/*.md; do
   fi
 done
 
+# Copy src dir into a temp sibling, then swap atomically so an interrupted
+# copy never leaves the destination missing or half-populated.
+sync_skill_dir() {
+  local src="$1" dest="$2" tmp="$2.tmp.$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp"
+  cp -r "$src"/* "$tmp"/
+  rm -rf "$dest"
+  mv "$tmp" "$dest"
+  git add "$dest/"
+}
+
 # --- japanese-rap ---
 if [ -d japanese-rap ]; then
-  rm -rf skills/japanese-rap
-  mkdir -p skills/japanese-rap
-  cp -r japanese-rap/* skills/japanese-rap/
-  git add skills/japanese-rap/
+  sync_skill_dir japanese-rap skills/japanese-rap
 fi
 
 # --- dajare-spinner ---
 if [ -d dajare-spinner ]; then
-  rm -rf skills/dajare-spinner
-  mkdir -p skills/dajare-spinner
-  cp -r dajare-spinner/* skills/dajare-spinner/
-  git add skills/dajare-spinner/
+  sync_skill_dir dajare-spinner skills/dajare-spinner
 fi
