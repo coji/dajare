@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # Sync root files to skills/dajare/ and skills/japanese-rap/
 # Root SKILL.md, scripts/rhyme.py, and references/ are the single source of truth for dajare.
 # japanese-rap/ is the single source of truth for the japanese-rap skill.
+set -euo pipefail
 
 # --- dajare ---
 cp SKILL.md skills/dajare/SKILL.md
@@ -27,6 +28,7 @@ done
 
 # --- japanese-rap ---
 if [ -d japanese-rap ]; then
+  rm -rf skills/japanese-rap
   mkdir -p skills/japanese-rap
   cp -r japanese-rap/* skills/japanese-rap/
   git add skills/japanese-rap/
@@ -34,6 +36,7 @@ fi
 
 # --- dajare-spinner ---
 if [ -d dajare-spinner ]; then
+  rm -rf skills/dajare-spinner
   mkdir -p skills/dajare-spinner
   cp -r dajare-spinner/* skills/dajare-spinner/
   git add skills/dajare-spinner/

@@ -1,11 +1,7 @@
 ---
 name: dajare-spinner
-description: Claude Codeのスピナー（処理中表示）にランダムなダジャレを設定するスキル。作業中にダジャレが流れてきて楽しくなる。
-triggers:
-  - "スピナー"
-  - "spinner"
-  - "ダジャレスピナー"
-  - "dajare-spinner"
+description: Claude Codeのスピナー（spinner、処理中表示）にランダムなダジャレを設定する dajare-spinner スキル。作業中にダジャレが流れてきて楽しくなる。
+license: MIT
 ---
 
 # dajare-spinner

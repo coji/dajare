@@ -57,6 +57,14 @@ SKILL.md の frontmatter `description` を変更したら、以下も同じ内�
 3. `.claude-plugin/marketplace.json` の plugins[0].description
 4. `README.md` の冒頭説明
 
+### SKILL.md frontmatter の方針
+
+agentskills.io 仕様上、必須は `name` / `description` のみ。本リポジトリでは以下を統一ルールとする：
+
+- 全 SKILL.md（ルート、`japanese-rap/`、`dajare-spinner/`）に `license: MIT` を含める
+- `argument-hint` は Claude Code 固有だが機能するので使用可
+- `triggers` のような非標準フィールドは使わない。トリガーとなる語は frontmatter に別立てせず、`description` 本文に自然に織り込む
+
 ## 設計方針：Progressive Disclosure（段階的開示）
 
 SKILL.md はオーケストレーター（フロー制御）に徹し、詳細な知識は references/ に分離している。
